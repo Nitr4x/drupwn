@@ -9,13 +9,13 @@ class Dfiles(APlugin):
     """
 
     def __init__(self, request, logger, config):
-        logger.handle("\n============ Default files ============\n")
+        logger.handle("\n============ Default files ============\n", None)
 
         super().__init__(config["thread"])
         self.logger = logger
         self.request = request
 
-        self.files = ["README.txt", "LICENSE.txt", "web.config", "update.php", "robots.txt", "install.php"]
+        self.files = ["README.txt", "LICENSE.txt", "web.config", "update.php", "robots.txt", "install.php", "xmlrpc.php"]
 
     def run(self):
         for f in self.files:
@@ -28,4 +28,4 @@ class Dfiles(APlugin):
 
         r = self.request.get(path)
         if r.status_code != 404:
-            self.logger.handle("[+] " + path + " (" + str(r.status_code) + ")")
+            self.logger.handle("[+] " + path + " (" + str(r.status_code) + ")", None)

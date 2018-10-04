@@ -13,13 +13,13 @@ class Modules(APlugin):
     """
 
     def __init__(self, request, logger, config):
-        logger.handle("\n============ Modules ============\n")
+        logger.handle("\n============ Modules ============\n", None)
 
         super().__init__(config["thread"])
         self.logger = logger
         self.request = request
 
-        self.paths = ["/sites/all/modules/contrib/", "/sites/default/modules"]
+        self.paths = ["/sites/all/modules/contrib/", "/sites/default/modules/"]
         self.files = ["README.txt", "LICENSE.txt", "CHANGELOG.txt"]
 
     def run(self):
@@ -49,7 +49,7 @@ class Modules(APlugin):
                     if self.request.get(path + s_plugin + '/' + f).status_code == 200:
                         buf += "\t- " + f + "\n"
         if buf != "":
-            self.logger.handle(buf)
+            self.logger.handle(buf, None)
 
     def _getVersion(self, content):
         """Retrieve the module version.

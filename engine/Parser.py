@@ -20,16 +20,17 @@ class Parser:
         """
 
         parser = argparse.ArgumentParser(description="""\
-            Drupwn aims to automaton drupal information gathering.
+            Drupwn aims to automate drupal information gathering.
         """)
 
+        parser.add_argument('mode', type=str, help='enum|exploit')
         parser.add_argument('target', type=str, help='hostname to scan')
-        parser.add_argument("--fingerprinting", help="Drupal version", action="store_true")
         parser.add_argument("--users", help="user enumaration", action="store_true")
         parser.add_argument("--nodes", help="node enumeration", action="store_true")
         parser.add_argument("--modules", help="module enumeration", action="store_true")
         parser.add_argument("--dfiles", help="default files enumeration", action="store_true")
         parser.add_argument("--themes", help="theme enumeration", action="store_true")
+        parser.add_argument("--version", type=float, help="Drupal version")
         parser.add_argument("--cookies", type=str, help="cookies")
         parser.add_argument("--thread", type=int, help="threads number")
         parser.add_argument("--range", type=int, help="enumeration range")
@@ -37,6 +38,10 @@ class Parser:
         parser.add_argument("--bauth", type=str, help="Basic authentication")
         parser.add_argument("--delay", type=float, help="request delay")
         parser.add_argument("--log", help="file logging", action="store_true")
+
+        group = parser.add_mutually_exclusive_group(required=False)
+        group.add_argument("--proxy", type=str, help="[http|https|socks]://host:port")
+        group.add_argument("--proxies", type=str, help="Proxies file")
 
         self._loadConfig(parser.parse_args())
         self._sanitizeConfig()
@@ -58,19 +63,22 @@ class Parser:
 
         self.config = {
             "target": args.target,
-            "fingerprinting": args.fingerprinting,
+            "mode": args.mode,
             "users": args.users,
             "nodes": args.nodes,
             "modules": args.modules,
             "dfiles": args.dfiles,
             "themes": args.themes,
+            "version": args.version,
             "cookies": args.cookies,
             "thread": args.thread,
             "range": args.range,
             "userAgent": args.ua,
             "bauth": args.bauth,
             "delay": args.delay,
-            "log": args.log
+            "log": args.log,
+            "proxy": args.proxy,
+            "proxies": args.proxies
         }
 
     def _sanitizeConfig(self):
@@ -82,6 +90,34 @@ class Parser:
         self.config["userAgent"] = self._setUserAgent(self.config["userAgent"])
         self.config["bauth"] = self._setBAuth(self.config["bauth"])
         self.config["delay"] = self._setDelay(self.config["delay"])
+
+        self.config["proxy"] = self._setProxies(None, self.config["proxy"]) if self.config["proxy"] is not None else None
+        self.config["proxies"] = self._setProxies(self.config["proxies"], None) if self.config["proxies"] is not None else None
+
+    def _setProxies(self, proxies, proxy):
+        """Set proxies.
+
+        Parameters
+        ----------
+        proxies : str
+            Proxies values
+        proxy : str
+            Proxy value
+
+        Return
+        ------
+        Proxies array
+        """
+
+        p_list = []
+        if proxy is not None:
+            p_list.append(proxy)
+        elif proxies is not None:
+            with open(proxies, "rU") as fd:
+                for line in fd:
+                    p_list.append(line.replace("\n", ""))
+
+        return p_list
 
     def _setRange(self, eRange):
         """Set enumeration range.
